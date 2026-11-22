@@ -4,11 +4,12 @@
     {
       "name": "Run tests on save",
       "trigger": "PostFileSave",
+      "matcher": "(src|test)[\\\\/].*\\.js$",
       "action": {
         "type": "command",
         "command": "npm test > test-results.txt 2>&1"
       },
-      "description": "Runs the unit and property-based tests whenever a source or test file is saved",
+      "description": "Runs the unit and property-based tests whenever Kiro saves a .js file in src/ or test/",
       "enabled": true
     }
   ]
