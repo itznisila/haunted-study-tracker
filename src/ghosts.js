@@ -19,71 +19,18 @@ export function ghostWanderRange(speed) {
 }
 
 /**
- * Create a ghost SVG silhouette with proper head, wavy bottom, and eyes
+ * Create the ghost picture. Anger level is shown by size (set here),
+ * opacity (set by caller) and a colour tint + glow in CSS via data-anger-level.
  */
-function createGhostSVG(level, size) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 100 120");
-  svg.setAttribute("width", size);
-  svg.setAttribute("height", size);
-  svg.classList.add("ghost-svg");
-
-  const colors = {
-    1: "rgba(232, 230, 240, 0.6)",
-    2: "rgba(240, 100, 100, 0.8)",
-    3: "rgba(192, 57, 43, 1)",
-  };
-
-  const ghostColor = colors[level] || colors[1];
-  const glowColor = level === 3 ? "#c0392b" : level === 2 ? "rgba(240, 100, 100, 0.8)" : "rgba(255, 179, 71, 0.5)";
-  const glowRadius = level === 1 ? 8 : level === 2 ? 12 : 15;
-
-  // Ghost body with wavy bottom: rounded head, 3-bump wavy bottom
-  const body = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  // Path: rounded head (arc) + wavy bumpy bottom (sine wave with 3 bumps)
-  body.setAttribute("d", "M 30 25 Q 20 25 20 40 Q 20 60 30 70 Q 25 75 30 80 Q 40 75 50 80 Q 60 75 70 80 Q 75 75 70 70 Q 80 60 80 40 Q 80 25 70 25 Q 60 20 50 20 Q 40 20 30 25 Z");
-  body.setAttribute("fill", ghostColor);
-  body.setAttribute("filter", `drop-shadow(0 0 ${glowRadius}px ${glowColor})`);
-
-  // Left eye - narrows (becomes more oval) at higher anger levels
-  const leftEye = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-  leftEye.setAttribute("cx", "35");
-  leftEye.setAttribute("cy", "45");
-  if (level === 3) {
-    leftEye.setAttribute("rx", "4");
-    leftEye.setAttribute("ry", "7");
-  } else {
-    leftEye.setAttribute("rx", "6");
-    leftEye.setAttribute("ry", "6");
-  }
-  leftEye.setAttribute("fill", "#0b0a12");
-
-  // Right eye - narrows at higher anger
-  const rightEye = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-  rightEye.setAttribute("cx", "65");
-  rightEye.setAttribute("cy", "45");
-  if (level === 3) {
-    rightEye.setAttribute("rx", "4");
-    rightEye.setAttribute("ry", "7");
-  } else {
-    rightEye.setAttribute("rx", "6");
-    rightEye.setAttribute("ry", "6");
-  }
-  rightEye.setAttribute("fill", "#0b0a12");
-
-  // Mouth
-  const mouth = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  mouth.setAttribute("cx", "50");
-  mouth.setAttribute("cy", "60");
-  mouth.setAttribute("r", "4");
-  mouth.setAttribute("fill", "#0b0a12");
-
-  svg.appendChild(body);
-  svg.appendChild(leftEye);
-  svg.appendChild(rightEye);
-  svg.appendChild(mouth);
-
-  return svg;
+function createGhostImage(level, size) {
+  const img = document.createElement("img");
+  img.src = "assets/ghost.png";
+  img.alt = ""; // the button's aria-label already describes the ghost
+  img.width = size;
+  img.height = size;
+  img.draggable = false;
+  img.className = "ghost-img";
+  return img;
 }
 
 /**
@@ -107,10 +54,10 @@ export function createGhostElement(task, now) {
   button.setAttribute("data-anger-level", level);
   button.setAttribute("title", `${task.title}\nOverdue: ${daysText}`);
 
-  const svg = createGhostSVG(level, style.size);
-  svg.style.opacity = style.opacity;
+  const img = createGhostImage(level, style.size);
+  img.style.opacity = style.opacity;
 
-  button.appendChild(svg);
+  button.appendChild(img);
   button.style.position = "absolute";
   button.style.pointerEvents = "auto";
 
@@ -138,11 +85,11 @@ export function renderGhosts(tasks, now, container) {
         const style = ghostStyle(newLevel);
         ghost.setAttribute("data-anger-level", newLevel);
         
-        // Clear children and recreate SVG with new level
+        // Clear children and recreate the ghost image with new level
         ghost.innerHTML = "";
-        const svg = createGhostSVG(newLevel, style.size);
-        svg.style.opacity = style.opacity;
-        ghost.appendChild(svg);
+        const img = createGhostImage(newLevel, style.size);
+        img.style.opacity = style.opacity;
+        ghost.appendChild(img);
         
         // Update label
         const daysOverdue = (now - new Date(task.deadline)) / (1000 * 60 * 60 * 24);
@@ -244,9 +191,9 @@ export function updateAngerLevels(getStateTasks, now, container) {
 
         const style = ghostStyle(newLevel);
         ghostEl.innerHTML = "";
-        const svg = createGhostSVG(newLevel, style.size);
-        svg.style.opacity = style.opacity;
-        ghostEl.appendChild(svg);
+        const img = createGhostImage(newLevel, style.size);
+        img.style.opacity = style.opacity;
+        ghostEl.appendChild(img);
 
         const daysOverdue = (now - new Date(task.deadline)) / (1000 * 60 * 60 * 24);
         const daysText = daysOverdue < 1 ? "< 1 day" : `${Math.floor(daysOverdue)} days`;
