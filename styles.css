@@ -1,0 +1,571 @@
+/* Theme CSS Variables */
+:root {
+  /* Colors */
+  --color-black: #0b0a12;
+  --color-purple: #2a1f3d;
+  --color-ghost-white: #e8e6f0;
+  --color-candle-amber: #ffb347;
+  --color-anger-red: #c0392b;
+
+  /* Room lighting (0-1 scale) */
+  --room-light: 0;
+
+  /* Fonts */
+  --font-heading: "Creepster", cursive;
+  --font-body: "Inter", sans-serif;
+
+  /* Sizing */
+  --size-ghost-small: 60px;
+  --size-ghost-med: 100px;
+  --size-ghost-large: 150px;
+}
+
+/* Import fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@font-face {
+  font-family: "Creepster";
+  src: url("https://fonts.gstatic.com/s/creepster/v21/AlZa_z1Zlz4lXt3GtOEVUQ.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Reset and base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-body);
+  background-color: var(--color-black);
+  color: var(--color-ghost-white);
+  overflow: hidden;
+}
+
+/* Room background with dynamic lighting */
+.room {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgb(42, 31, 61) calc(30% + var(--room-light) * 20%),
+    var(--color-black) 100%
+  );
+  transition: background 0.3s ease;
+  overflow: hidden;
+}
+
+/* Haunting layer - full screen behind everything */
+.haunting-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.haunting-layer.has-active-timer {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+/* Main container with task list and timer */
+.container {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  padding: 40px;
+  height: 100%;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+/* Task section */
+.task-section {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.task-section h1 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: var(--color-ghost-white);
+}
+
+/* Task form */
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: rgba(42, 31, 61, 0.5);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(232, 230, 240, 0.2);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group input {
+  padding: 10px;
+  background: rgba(11, 10, 18, 0.7);
+  border: 1px solid rgba(232, 230, 240, 0.3);
+  border-radius: 4px;
+  color: var(--color-ghost-white);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.form-group input::placeholder {
+  color: rgba(232, 230, 240, 0.6);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--color-candle-amber);
+  box-shadow: 0 0 10px rgba(255, 179, 71, 0.3);
+}
+
+.task-form button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--color-candle-amber), #ff9500);
+  border: none;
+  border-radius: 4px;
+  color: var(--color-black);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 179, 71, 0.4);
+}
+
+.task-form button:active {
+  transform: translateY(0);
+}
+
+/* Error message */
+.error-message {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  min-height: 20px;
+}
+
+/* Task list */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(42, 31, 61, 0.4);
+  border: 1px solid rgba(232, 230, 240, 0.2);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.task-item:hover {
+  background: rgba(42, 31, 61, 0.6);
+  border-color: rgba(232, 230, 240, 0.4);
+}
+
+.task-item.done {
+  opacity: 0.6;
+  text-decoration: line-through;
+  color: rgba(232, 230, 240, 0.7);
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.task-meta {
+  font-size: 0.85rem;
+  color: rgba(232, 230, 240, 0.7);
+}
+
+.task-warning {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--color-candle-amber);
+  font-weight: 600;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.task-actions button {
+  padding: 6px 12px;
+  background: rgba(232, 230, 240, 0.1);
+  border: 1px solid rgba(232, 230, 240, 0.3);
+  border-radius: 4px;
+  color: var(--color-ghost-white);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.task-actions button:hover {
+  background: rgba(232, 230, 240, 0.2);
+  border-color: rgba(232, 230, 240, 0.5);
+}
+
+.task-actions button.delete {
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.task-actions button.delete:hover {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.5);
+}
+
+/* Timer section */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.timer-section h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  color: var(--color-ghost-white);
+}
+
+/* Candle */
+.candle-container {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 200px;
+}
+
+.candle {
+  position: relative;
+  width: 60px;
+  height: 120px;
+  background: linear-gradient(to bottom, #f5deb3, #daa520);
+  border-radius: 8px 8px 20px 20px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+}
+
+.candle.melting {
+  animation: melt 0.5s ease-out;
+}
+
+@keyframes melt {
+  0% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0.95);
+  }
+}
+
+.wax {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(to bottom, #f5deb3, #daa520);
+  border-radius: 0 0 20px 20px;
+  transition: height 0.1s linear;
+  pointer-events: none;
+}
+
+.flame {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 40px;
+  background: linear-gradient(to top, var(--color-candle-amber), #ffd700, #ffeb3b);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 0 20px rgba(255, 179, 71, 0.8);
+  animation: flicker 0.3s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(-50%) scaleY(0.95);
+  }
+}
+
+.flame.paused {
+  animation: none;
+  opacity: 0.6;
+}
+
+/* Timer display */
+.timer-display {
+  font-family: "Courier New", monospace;
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--color-candle-amber);
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(255, 179, 71, 0.5);
+  min-width: 200px;
+  text-align: center;
+}
+
+/* Timer controls */
+.timer-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.timer-controls button {
+  padding: 10px 20px;
+  background: rgba(232, 230, 240, 0.1);
+  border: 1px solid rgba(232, 230, 240, 0.3);
+  border-radius: 4px;
+  color: var(--color-ghost-white);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.timer-controls button:hover:not(:disabled) {
+  background: rgba(232, 230, 240, 0.2);
+  border-color: rgba(232, 230, 240, 0.5);
+}
+
+.timer-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: rgba(42, 31, 61, 0.4);
+  border: 1px solid rgba(232, 230, 240, 0.2);
+  border-radius: 6px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: rgba(232, 230, 240, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-candle-amber);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.controls button {
+  flex: 1;
+  padding: 10px 20px;
+  background: rgba(232, 230, 240, 0.1);
+  border: 1px solid rgba(232, 230, 240, 0.3);
+  border-radius: 4px;
+  color: var(--color-ghost-white);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.controls button:hover {
+  background: rgba(232, 230, 240, 0.2);
+  border-color: rgba(232, 230, 240, 0.5);
+}
+
+/* Ghost button (in haunting layer) */
+.ghost-button {
+  position: absolute;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  font-size: 1rem;
+  padding: 0;
+  font-family: inherit;
+}
+
+.ghost-button:focus {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+/* Exorcism animation */
+@keyframes exorcise {
+  0% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(5deg);
+    filter: brightness(2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(360deg);
+  }
+}
+
+.ghost.exorcising {
+  animation: exorcise 0.6s ease-out forwards;
+}
+
+/* Particle effect for exorcism */
+@keyframes particle-dissolve {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0);
+  }
+}
+
+.particle {
+  position: absolute;
+  pointer-events: none;
+  animation: particle-dissolve 0.6s ease-out forwards;
+}
+
+/* Responsive layout */
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .task-section,
+  .timer-section {
+    max-height: calc(50vh - 20px);
+  }
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .flame {
+    animation: none;
+    opacity: 1;
+  }
+
+  .ghost-button {
+    animation: none !important;
+  }
+
+  .particle {
+    animation: none !important;
+  }
+
+  .room {
+    transition: none;
+  }
+
+  .haunting-layer.has-active-timer {
+    transition: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode (default) */
+@media (prefers-color-scheme: dark) {
+  .room {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgb(42, 31, 61) calc(30% + var(--room-light) * 20%),
+      var(--color-black) 100%
+    );
+  }
+}
+
+/* Light mode support (optional) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-black: #f5f5f5;
+    --color-purple: #e8d7f1;
+    --color-ghost-white: #2a2a2a;
+    --color-anger-red: #d32f2f;
+  }
+
+  .room {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgb(232, 215, 241) calc(30% + var(--room-light) * 20%),
+      #f5f5f5 100%
+    );
+  }
+}

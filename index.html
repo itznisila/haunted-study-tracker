@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haunted Study Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="room">
+    <!-- Haunting layer with ghosts -->
+    <div class="haunting-layer" id="hauntingLayer"></div>
+
+    <div class="container">
+      <!-- Task list -->
+      <section class="task-section">
+        <h1>Tasks</h1>
+        <form id="taskForm" class="task-form">
+          <div class="form-group">
+            <input type="text" id="taskTitle" placeholder="Task title" required aria-label="Task title">
+          </div>
+          <div class="form-group">
+            <input type="text" id="taskSubject" placeholder="Subject" required aria-label="Subject">
+          </div>
+          <div class="form-group">
+            <input type="datetime-local" id="taskDeadline" required aria-label="Deadline">
+          </div>
+          <button type="submit" aria-label="Add task">Add Task</button>
+        </form>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div id="taskList" class="task-list"></div>
+      </section>
+
+      <!-- Timer and stats -->
+      <section class="timer-section">
+        <h2>Focus Timer</h2>
+        <div class="candle-container">
+          <div class="candle" id="candle">
+            <div class="flame"></div>
+            <div class="wax"></div>
+          </div>
+        </div>
+        <div id="timerDisplay" class="timer-display">25:00</div>
+        <div class="timer-controls">
+          <button id="startTimer" aria-label="Start timer">Start</button>
+          <button id="pauseTimer" aria-label="Pause timer" disabled>Pause</button>
+          <button id="resetTimer" aria-label="Reset timer">Reset</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Streak</span>
+            <span id="streakCount" class="stat-value">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Exorcised</span>
+            <span id="exorcisedCount" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundToggle" aria-label="Toggle sound">🔊 Sound: Off</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

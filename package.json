@@ -1,0 +1,16 @@
+{
+  "name": "haunted-study-tracker",
+  "version": "1.0.0",
+  "description": "A task management app with a ghost theme - ghosts haunt you for overdue work, and your study streak lights the room",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "fast-check": "^3.13.0"
+  },
+  "devDependencies": {},
+  "keywords": ["productivity", "tasks", "study", "gamification"],
+  "author": "",
+  "license": "MIT"
+}
