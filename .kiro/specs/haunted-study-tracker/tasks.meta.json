@@ -36,6 +36,18 @@
         "chatSessionId": "sess_271485c0-c422-4910-9af5-d442d01e8f76",
         "timestamp": 1795337901257
       }
+    ],
+    "6. Exorcism": [
+      {
+        "executionId": "0a8894fc-b1cd-41e0-9b50-0cd3b82535a2",
+        "chatSessionId": "sess_d6fed99f-11d0-424c-be2b-6e3762339401",
+        "timestamp": 1795348029065
+      },
+      {
+        "executionId": "0a8894fc-b1cd-41e0-9b50-0cd3b82535a2",
+        "chatSessionId": "sess_d6fed99f-11d0-424c-be2b-6e3762339401",
+        "timestamp": 1795348254343
+      }
     ]
   }
 }

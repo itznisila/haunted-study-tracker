@@ -22,6 +22,30 @@ function generateTaskId() {
 }
 
 /**
+ * Shared exorcism function used by both ghost click and task toggle paths
+ * Plays animation, removes ghost, increments counter (only once per task)
+ */
+function performExorcism(taskId, ghostEl) {
+  const task = state.tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  // Only increment counter if this task hasn't been counted yet
+  if (!task.exorcisedAt) {
+    playExorcismAnimation(ghostEl, () => {
+      state.exorcised = (state.exorcised || 0) + 1;
+      task.exorcisedAt = new Date().toISOString();
+      save(state);
+      updateExorcisedCount();
+    });
+  } else {
+    // Task already counted - just remove the ghost without incrementing
+    playExorcismAnimation(ghostEl, () => {
+      save(state);
+    });
+  }
+}
+
+/**
  * Render the task list with sorted pending tasks
  */
 function renderTaskList() {
@@ -186,7 +210,7 @@ function showExorcismPopover(taskId, ghostEl) {
 }
 
 /**
- * Handle task completion toggle
+ * Handle task completion toggle from task list
  */
 function handleToggleTask(taskId) {
   const task = state.tasks.find((t) => t.id === taskId);
@@ -194,6 +218,13 @@ function handleToggleTask(taskId) {
     task.done = !task.done;
     if (task.done) {
       task.completedAt = new Date().toISOString();
+      // Find and exorcise the ghost if it exists
+      const hauntingLayer = document.getElementById("hauntingLayer");
+      const ghostEl = hauntingLayer.querySelector(`[data-task-id="${taskId}"]`);
+      if (ghostEl) {
+        performExorcism(taskId, ghostEl);
+        return; // Animation callback will handle save
+      }
     } else {
       task.completedAt = null;
     }
@@ -208,9 +239,14 @@ function handleToggleTask(taskId) {
 function handleGhostClick(taskId, ghostEl) {
   const task = state.tasks.find((t) => t.id === taskId);
   if (task && !task.done) {
-    playExorcismAnimation(ghostEl, () => {
-      handleToggleTask(taskId);
-    });
+    performExorcism(taskId, ghostEl);
+    // After animation completes, mark task as done
+    setTimeout(() => {
+      task.done = true;
+      task.completedAt = new Date().toISOString();
+      save(state);
+      renderTaskList();
+    }, 600);
   }
 }
 
@@ -313,6 +349,7 @@ function handleFormSubmit(e) {
       deadline,
       done: false,
       completedAt: null,
+      exorcisedAt: null,
     };
     state.tasks.push(newTask);
   }
@@ -320,6 +357,16 @@ function handleFormSubmit(e) {
   save(state);
   renderTaskList();
   clearForm();
+}
+
+/**
+ * Update the exorcised count display
+ */
+function updateExorcisedCount() {
+  const exorcisedCountEl = document.getElementById("exorcisedCount");
+  if (exorcisedCountEl) {
+    exorcisedCountEl.textContent = state.exorcised || 0;
+  }
 }
 
 /**
@@ -332,6 +379,7 @@ function initApp() {
   taskForm.addEventListener("submit", handleFormSubmit);
 
   renderTaskList();
+  updateExorcisedCount();
 
   const hauntingLayer = document.getElementById("hauntingLayer");
   // 60-second interval calls renderGhostsLayer to handle newly overdue tasks

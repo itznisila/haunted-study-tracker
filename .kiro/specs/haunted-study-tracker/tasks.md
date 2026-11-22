@@ -24,7 +24,7 @@
   - Re-check anger levels every minute.
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.2_
 
-- [ ] 6. Exorcism
+- [x] 6. Exorcism
   - Completing a task plays the exorcism animation, removes the ghost and increments the counter.
   - _Requirements: 3.1, 3.3_
 
