@@ -12,6 +12,18 @@
         "chatSessionId": "sess_1bf8e08a-b2d4-4207-b7f9-e358a6de36fd",
         "timestamp": 1795331064762
       }
+    ],
+    "4. Task list": [
+      {
+        "executionId": "f7b257f0-aa54-4f80-9f61-f06198c1eeb8",
+        "chatSessionId": "sess_f32601be-7600-4e70-9c7a-c88b369fc375",
+        "timestamp": 1795335916521
+      },
+      {
+        "executionId": "f7b257f0-aa54-4f80-9f61-f06198c1eeb8",
+        "chatSessionId": "sess_f32601be-7600-4e70-9c7a-c88b369fc375",
+        "timestamp": 1795336167621
+      }
     ]
   }
 }

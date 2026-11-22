@@ -5,16 +5,16 @@
   - Add the theme CSS variables and fonts.
   - _Requirements: 6.4_
 
-- [ ] 2. Write the pure logic and its property-based tests
+- [X] 2. Write the pure logic and its property-based tests
   - Implement every function in the design's logic table in `src/logic.js`.
   - Write the properties from the testing strategy in `test/logic.test.js`.
   - _Requirements: 2.2, 2.5, 4.1, 5.1, 5.2, 5.3_
 
-- [ ] 3. Storage
+- [X] 3. Storage
   - `load()` and `save(state)` in `src/storage.js`, with safe defaults if storage is empty or broken.
   - _Requirements: 1.4_
 
-- [ ] 4. Task list
+- [x] 4. Task list
   - Add/edit/delete form with validation, sorted pending list, warning wisp for tasks due within 24h.
   - _Requirements: 1.1, 1.2, 1.3, 1.5, 2.5_
 
