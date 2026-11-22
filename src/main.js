@@ -22,27 +22,22 @@ function generateTaskId() {
 }
 
 /**
- * Shared exorcism function used by both ghost click and task toggle paths
- * Plays animation, removes ghost, increments counter (only once per task)
+ * Shared exorcism used by ghost click and task-list toggle.
+ * Plays the animation, counts each task only once, then saves and re-renders.
  */
 function performExorcism(taskId, ghostEl) {
   const task = state.tasks.find((t) => t.id === taskId);
   if (!task) return;
 
-  // Only increment counter if this task hasn't been counted yet
-  if (!task.exorcisedAt) {
-    playExorcismAnimation(ghostEl, () => {
+  playExorcismAnimation(ghostEl, () => {
+    if (!task.exorcisedAt) {
       state.exorcised = (state.exorcised || 0) + 1;
       task.exorcisedAt = new Date().toISOString();
-      save(state);
       updateExorcisedCount();
-    });
-  } else {
-    // Task already counted - just remove the ghost without incrementing
-    playExorcismAnimation(ghostEl, () => {
-      save(state);
-    });
-  }
+    }
+    save(state);
+    renderTaskList();
+  });
 }
 
 /**
@@ -234,19 +229,14 @@ function handleToggleTask(taskId) {
 }
 
 /**
- * Handle ghost click to complete task with exorcism animation
+ * Handle ghost "Exorcise" confirm: mark done, then animate via the shared path
  */
 function handleGhostClick(taskId, ghostEl) {
   const task = state.tasks.find((t) => t.id === taskId);
   if (task && !task.done) {
+    task.done = true;
+    task.completedAt = new Date().toISOString();
     performExorcism(taskId, ghostEl);
-    // After animation completes, mark task as done
-    setTimeout(() => {
-      task.done = true;
-      task.completedAt = new Date().toISOString();
-      save(state);
-      renderTaskList();
-    }, 600);
   }
 }
 
