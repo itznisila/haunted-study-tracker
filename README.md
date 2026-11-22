@@ -2,6 +2,8 @@
 
 **Overdue work haunts you. Focus drives the ghosts away.**
 
+![Haunted Study Tracker: overdue tasks become ghosts beside a melting candle timer](assets/screenshot.png)
+
 A study tracker for university students where procrastination literally haunts your screen. Every overdue assignment becomes a ghost that grows bigger and angrier the longer you ignore it. Focus with a melting-candle Pomodoro timer, exorcise your ghosts by finishing the work, and keep a daily streak to light up the room.
 
 Built for **Kiroween 2026** (Costume Contest category) with [Kiro](https://kiro.dev).
