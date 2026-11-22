@@ -20,16 +20,6 @@
   --size-ghost-large: 150px;
 }
 
-/* Import fonts */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
-@font-face {
-  font-family: "Creepster";
-  src: url("https://fonts.gstatic.com/s/creepster/v21/AlZa_z1Zlz4lXt3GtOEVUQ.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-}
-
 /* Reset and base */
 * {
   margin: 0;
@@ -95,7 +85,7 @@ html, body {
   flex-direction: column;
   overflow-y: auto;
   padding-right: 10px;
-  pointer-events: auto;
+  pointer-events: none; /* empty space lets clicks reach ghosts */
 }
 
 .task-section h1 {
@@ -262,7 +252,7 @@ html, body {
   justify-content: flex-start;
   overflow-y: auto;
   padding-right: 10px;
-  pointer-events: auto;
+  pointer-events: none; /* empty space lets clicks reach ghosts */
 }
 
 .timer-section h2 {
@@ -618,31 +608,10 @@ html, body {
   }
 }
 
-/* Dark mode (default) */
-@media (prefers-color-scheme: dark) {
-  .room {
-    background: radial-gradient(
-      circle at 50% 50%,
-      rgb(42, 31, 61) calc(30% + var(--room-light) * 20%),
-      var(--color-black) 100%
-    );
-  }
-}
-
-/* Light mode support (optional) */
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-black: #f5f5f5;
-    --color-purple: #e8d7f1;
-    --color-ghost-white: #2a2a2a;
-    --color-anger-red: #d32f2f;
-  }
-
-  .room {
-    background: radial-gradient(
-      circle at 50% 50%,
-      rgb(232, 215, 241) calc(30% + var(--room-light) * 20%),
-      #f5f5f5 100%
-    );
-  }
+/* Only real controls catch clicks; empty space lets clicks reach ghosts */
+.task-form,
+.task-item,
+.timer-controls,
+.controls {
+  pointer-events: auto;
 }
