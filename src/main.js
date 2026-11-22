@@ -6,11 +6,13 @@
 import { load, save } from "./storage.js";
 import { sortPending, isWarning } from "./logic.js";
 import { createTaskItem, formatDeadline, playExorcismAnimation } from "./ui.js";
-import { renderGhosts, driftGhost, startAngerUpdateInterval } from "./ghosts.js";
+import { renderGhosts, driftGhost, getGhostPosition, setGhostPosition } from "./ghosts.js";
 
 let state = null;
 let editingTaskId = null;
 let angerUpdateInterval = null;
+let currentPopover = null;
+let popoverKeyHandler = null;
 
 /**
  * Generate a unique task ID
@@ -44,7 +46,9 @@ function renderTaskList() {
 }
 
 /**
- * Render ghosts in the haunting layer and position them randomly
+ * Render ghosts in the haunting layer
+ * Only initializes NEW ghosts - skips already-initialized ones
+ * Preserves positions across re-renders, assigns random positions to new ghosts
  */
 function renderGhostsLayer() {
   const hauntingLayer = document.getElementById("hauntingLayer");
@@ -53,8 +57,26 @@ function renderGhostsLayer() {
   renderGhosts(state.tasks, now, hauntingLayer);
 
   hauntingLayer.querySelectorAll(".ghost-button").forEach((ghostEl) => {
-    const posX = Math.random() * (window.innerWidth - 150);
-    const posY = Math.random() * (window.innerHeight - 150);
+    // Skip if already initialized
+    if (ghostEl.getAttribute("data-initialized") === "true") {
+      return;
+    }
+
+    const taskId = ghostEl.getAttribute("data-task-id");
+    
+    // Check if this ghost already has a stored position
+    let storedPos = getGhostPosition(taskId);
+    let posX, posY;
+    
+    if (storedPos) {
+      posX = storedPos.x;
+      posY = storedPos.y;
+    } else {
+      // New ghost - random starting position
+      posX = Math.random() * (window.innerWidth - 150);
+      posY = Math.random() * (window.innerHeight - 150);
+      setGhostPosition(taskId, posX, posY);
+    }
 
     ghostEl.style.left = `${posX}px`;
     ghostEl.style.top = `${posY}px`;
@@ -65,11 +87,29 @@ function renderGhostsLayer() {
 
     driftGhost(ghostEl, speed, posX, posY);
 
-    ghostEl.addEventListener("click", () => {
+    ghostEl.addEventListener("click", (e) => {
+      e.stopPropagation();
       const taskId = ghostEl.getAttribute("data-task-id");
       showExorcismPopover(taskId, ghostEl);
     });
+
+    // Mark as initialized
+    ghostEl.setAttribute("data-initialized", "true");
   });
+}
+
+/**
+ * Close the exorcism popover and cleanup event listeners
+ */
+function closeExorcismPopover() {
+  if (currentPopover) {
+    currentPopover.remove();
+    currentPopover = null;
+  }
+  if (popoverKeyHandler) {
+    document.removeEventListener("keydown", popoverKeyHandler);
+    popoverKeyHandler = null;
+  }
 }
 
 /**
@@ -79,9 +119,8 @@ function showExorcismPopover(taskId, ghostEl) {
   const task = state.tasks.find((t) => t.id === taskId);
   if (!task) return;
 
-  // Remove existing popover if any
-  const existing = document.querySelector(".exorcism-popover");
-  if (existing) existing.remove();
+  // Close any existing popover
+  closeExorcismPopover();
 
   // Create popover
   const popover = document.createElement("div");
@@ -91,37 +130,56 @@ function showExorcismPopover(taskId, ghostEl) {
   popover.style.left = `${rect.left + rect.width / 2}px`;
   popover.style.top = `${rect.top - 10}px`;
 
-  popover.innerHTML = `
-    <div class="popover-content">
-      <div class="popover-title">Exorcise &quot;${task.title}&quot;?</div>
-      <div class="popover-actions">
-        <button class="popover-btn exorcise-btn">Exorcise</button>
-        <button class="popover-btn cancel-btn">Not yet</button>
-      </div>
-    </div>
-  `;
+  const popoverContent = document.createElement("div");
+  popoverContent.className = "popover-content";
+  
+  const title = document.createElement("div");
+  title.className = "popover-title";
+  title.textContent = `Exorcise "${task.title}"?`;
+  
+  const actions = document.createElement("div");
+  actions.className = "popover-actions";
+  
+  const exorciseBtn = document.createElement("button");
+  exorciseBtn.className = "popover-btn exorcise-btn";
+  exorciseBtn.textContent = "Exorcise";
+  
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className = "popover-btn cancel-btn";
+  cancelBtn.textContent = "Not yet";
+  
+  actions.appendChild(exorciseBtn);
+  actions.appendChild(cancelBtn);
+  popoverContent.appendChild(title);
+  popoverContent.appendChild(actions);
+  popover.appendChild(popoverContent);
 
   document.body.appendChild(popover);
-
-  const exorciseBtn = popover.querySelector(".exorcise-btn");
-  const cancelBtn = popover.querySelector(".cancel-btn");
-  const closePopover = () => popover.remove();
+  currentPopover = popover;
 
   exorciseBtn.addEventListener("click", () => {
-    closePopover();
+    closeExorcismPopover();
     handleGhostClick(taskId, ghostEl);
   });
 
-  cancelBtn.addEventListener("click", closePopover);
+  cancelBtn.addEventListener("click", closeExorcismPopover);
 
   // Close on Escape key
-  const keyHandler = (e) => {
+  popoverKeyHandler = (e) => {
     if (e.key === "Escape") {
-      closePopover();
-      document.removeEventListener("keydown", keyHandler);
+      closeExorcismPopover();
     }
   };
-  document.addEventListener("keydown", keyHandler);
+  document.addEventListener("keydown", popoverKeyHandler);
+
+  // Close on click outside popover
+  const outsideClickHandler = (e) => {
+    if (currentPopover && !currentPopover.contains(e.target) && e.target !== ghostEl) {
+      closeExorcismPopover();
+      document.removeEventListener("click", outsideClickHandler);
+    }
+  };
+  document.addEventListener("click", outsideClickHandler);
 
   // Focus exorcise button for accessibility
   exorciseBtn.focus();
@@ -276,8 +334,10 @@ function initApp() {
   renderTaskList();
 
   const hauntingLayer = document.getElementById("hauntingLayer");
-  // Pass a function that returns current state.tasks
-  angerUpdateInterval = startAngerUpdateInterval(() => state.tasks, hauntingLayer);
+  // 60-second interval calls renderGhostsLayer to handle newly overdue tasks
+  angerUpdateInterval = setInterval(() => {
+    renderGhostsLayer();
+  }, 60000);
 
   console.log("Haunted Study Tracker initialized");
   console.log("State loaded:", state);
