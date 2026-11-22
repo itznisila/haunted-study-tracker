@@ -12,6 +12,14 @@ const animationFrameIds = new Map();
 const ghostPositions = new Map();
 
 /**
+ * How far (px) a ghost wanders left/right from its spot. Higher anger = wider.
+ * Also used by main.js to keep enough empty space around a new ghost.
+ */
+export function ghostWanderRange(speed) {
+  return 40 + (speed - 1) * 30; // 40, 70, 100 px
+}
+
+/**
  * Create a ghost SVG silhouette with proper head, wavy bottom, and eyes
  */
 function createGhostSVG(level, size) {
@@ -181,8 +189,8 @@ export function driftGhost(element, speed, initialX, initialY) {
   const taskId = element.getAttribute("data-task-id");
   const container = element.parentElement;
   
-  // Amplitude based on anger: 100-250px
-  const amplitude = 100 + (speed - 1) * 75;
+  // Small wander so the ghost stays in the empty spot it spawned in
+  const amplitude = ghostWanderRange(speed);
 
   function animate(timestamp) {
     if (!element.parentElement) {

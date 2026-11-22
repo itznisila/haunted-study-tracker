@@ -6,7 +6,7 @@
 import { load, save } from "./storage.js";
 import { sortPending, isWarning, candleFraction, localDateKey, currentStreak } from "./logic.js";
 import { createTaskItem, formatDeadline, playExorcismAnimation, updateCandleWax, updateTimerDisplay } from "./ui.js";
-import { renderGhosts, driftGhost, getGhostPosition, setGhostPosition } from "./ghosts.js";
+import { renderGhosts, driftGhost, getGhostPosition, setGhostPosition, ghostWanderRange } from "./ghosts.js";
 
 let state = null;
 let editingTaskId = null;
@@ -74,10 +74,42 @@ function renderTaskList() {
   renderGhostsLayer();
 }
 
+// Visible UI that ghosts must not spawn behind
+const GHOST_BLOCKERS =
+  ".task-section h1, .task-form, .error-message, .task-item, " +
+  ".timer-section h2, .candle-container, .timer-display, .timer-controls, .stats, .controls";
+
 /**
- * Render ghosts in the haunting layer
- * Only initializes NEW ghosts - skips already-initialized ones
- * Preserves positions across re-renders, assigns random positions to new ghosts
+ * Find a random spot where a ghost (plus its wander range) doesn't overlap the UI.
+ * Falls back to a random spot if the screen is too full.
+ */
+function findFreeSpot(size, wander) {
+  const rects = [...document.querySelectorAll(GHOST_BLOCKERS)].map((el) =>
+    el.getBoundingClientRect()
+  );
+  const maxX = Math.max(0, window.innerWidth - size);
+  const maxY = Math.max(0, window.innerHeight - size);
+  const bob = 25; // vertical bob in driftGhost is about 20px
+
+  for (let i = 0; i < 80; i++) {
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+    const overlaps = rects.some(
+      (r) =>
+        x - wander < r.right &&
+        x + size + wander > r.left &&
+        y - bob < r.bottom &&
+        y + size + bob > r.top
+    );
+    if (!overlaps) return { x, y };
+  }
+  // ponytail: screen too crowded, accept a random spot; smarter packing if this happens often
+  return { x: Math.random() * maxX, y: Math.random() * maxY };
+}
+
+/**
+ * Render ghosts and set up only NEW ones (position, drift, click).
+ * New ghosts spawn in empty screen areas, never behind the task list or timer.
  */
 function renderGhostsLayer() {
   const hauntingLayer = document.getElementById("hauntingLayer");
@@ -86,43 +118,27 @@ function renderGhostsLayer() {
   renderGhosts(state.tasks, now, hauntingLayer);
 
   hauntingLayer.querySelectorAll(".ghost-button").forEach((ghostEl) => {
-    // Skip if already initialized
-    if (ghostEl.getAttribute("data-initialized") === "true") {
-      return;
-    }
+    if (ghostEl.getAttribute("data-initialized") === "true") return;
 
     const taskId = ghostEl.getAttribute("data-task-id");
-    
-    // Check if this ghost already has a stored position
-    let storedPos = getGhostPosition(taskId);
-    let posX, posY;
-    
-    if (storedPos) {
-      posX = storedPos.x;
-      posY = storedPos.y;
-    } else {
-      // New ghost - random starting position
-      posX = Math.random() * (window.innerWidth - 150);
-      posY = Math.random() * (window.innerHeight - 150);
-      setGhostPosition(taskId, posX, posY);
+    const level = parseInt(ghostEl.getAttribute("data-anger-level"));
+    const speed = Math.min(Math.max(level || 1, 1), 3);
+
+    let pos = getGhostPosition(taskId);
+    if (!pos) {
+      pos = findFreeSpot(ghostEl.offsetWidth || 150, ghostWanderRange(speed));
+      setGhostPosition(taskId, pos.x, pos.y);
     }
 
-    ghostEl.style.left = `${posX}px`;
-    ghostEl.style.top = `${posY}px`;
-
-    const level = parseInt(ghostEl.getAttribute("data-anger-level"));
-    const speeds = { 1: 1, 2: 2, 3: 3 };
-    const speed = speeds[level] || 1;
-
-    driftGhost(ghostEl, speed, posX, posY);
+    ghostEl.style.left = `${pos.x}px`;
+    ghostEl.style.top = `${pos.y}px`;
+    driftGhost(ghostEl, speed, pos.x, pos.y);
 
     ghostEl.addEventListener("click", (e) => {
       e.stopPropagation();
-      const taskId = ghostEl.getAttribute("data-task-id");
       showExorcismPopover(taskId, ghostEl);
     });
 
-    // Mark as initialized
     ghostEl.setAttribute("data-initialized", "true");
   });
 }
