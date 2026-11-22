@@ -147,6 +147,11 @@ html, body {
   box-shadow: 0 0 10px rgba(255, 179, 71, 0.3);
 }
 
+.form-group input:focus-visible {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 2px;
+}
+
 .task-form button {
   padding: 10px 20px;
   background: linear-gradient(135deg, var(--color-candle-amber), #ff9500);
@@ -165,6 +170,11 @@ html, body {
 
 .task-form button:active {
   transform: translateY(0);
+}
+
+.task-form button:focus-visible {
+  outline: 2px solid #2a1f3d;
+  outline-offset: 2px;
 }
 
 /* Error message */
@@ -246,6 +256,11 @@ html, body {
 .task-actions button:hover {
   background: rgba(232, 230, 240, 0.2);
   border-color: rgba(232, 230, 240, 0.5);
+}
+
+.task-actions button:focus-visible {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 2px;
 }
 
 .task-actions button.delete {
@@ -402,6 +417,11 @@ html, body {
   border-color: rgba(232, 230, 240, 0.5);
 }
 
+.timer-controls button:focus-visible {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 2px;
+}
+
 .timer-controls button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -464,6 +484,11 @@ html, body {
   border-color: rgba(232, 230, 240, 0.5);
 }
 
+.controls button:focus-visible {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 2px;
+}
+
 /* Ghost button (in haunting layer) */
 .ghost-button {
   position: absolute;
@@ -485,7 +510,8 @@ html, body {
   opacity: 0.9;
 }
 
-.ghost-button:focus {
+.ghost-button:focus,
+.ghost-button:focus-visible {
   outline: 2px solid var(--color-candle-amber);
   outline-offset: 4px;
   border-radius: 50%;

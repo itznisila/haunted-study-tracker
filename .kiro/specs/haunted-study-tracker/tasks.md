@@ -36,7 +36,7 @@
   - Show streak count; drive `--room-light` from `roomBrightness`.
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 9. Sound and accessibility
+- [x] 9. Sound and accessibility
   - Web Audio effects with a mute toggle (off by default); reduced-motion support; keyboard check.
   - _Requirements: 4.3, 6.1, 6.2, 6.3_
 

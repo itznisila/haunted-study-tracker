@@ -7,6 +7,7 @@ import { load, save } from "./storage.js";
 import { sortPending, isWarning, candleFraction, localDateKey, currentStreak, roomBrightness } from "./logic.js";
 import { createTaskItem, formatDeadline, playExorcismAnimation, updateCandleWax, updateTimerDisplay } from "./ui.js";
 import { renderGhosts, driftGhost } from "./ghosts.js";
+import { initAudio, toggleMute, updateSoundButtonUI, playExorcismSound, playSessionCompleteSound, shouldReduceMotion } from "./audio.js";
 
 let state = null;
 let editingTaskId = null;
@@ -38,6 +39,9 @@ function generateTaskId() {
 function performExorcism(taskId, ghostEl) {
   const task = state.tasks.find((t) => t.id === taskId);
   if (!task) return;
+
+  // Play exorcism sound
+  playExorcismSound();
 
   playExorcismAnimation(ghostEl, () => {
     if (!task.exorcisedAt) {
@@ -482,6 +486,9 @@ function handleTimerComplete() {
   timerState.timeRemaining = TIMER_DURATION;
   cancelAnimationFrame(timerAnimationFrameId);
 
+  // Play completion sound
+  playSessionCompleteSound();
+
   // Log 25 minutes to today's session
   const today = new Date();
   const todayKey = localDateKey(today);
@@ -554,8 +561,23 @@ function updateStreakDisplay() {
 function initApp() {
   state = load();
 
+  // Initialize audio system
+  initAudio(state);
+
   const taskForm = document.getElementById("taskForm");
   taskForm.addEventListener("submit", handleFormSubmit);
+
+  // Sound toggle button
+  const soundToggle = document.getElementById("soundToggle");
+  if (soundToggle) {
+    updateSoundButtonUI(soundToggle);
+    soundToggle.addEventListener("click", () => {
+      const isMuted = toggleMute();
+      state.soundOn = !isMuted;
+      save(state);
+      updateSoundButtonUI(soundToggle);
+    });
+  }
 
   // Timer event listeners
   document.getElementById("startTimer").addEventListener("click", handleStartTimer);
