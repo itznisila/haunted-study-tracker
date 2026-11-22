@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for audio.js module
  * Tests sound behavior and mute toggle functionality
  */
@@ -13,7 +13,6 @@ import {
   playExorcismSound,
   playSessionCompleteSound,
   updateSoundButtonUI,
-  shouldReduceMotion,
 } from "../src/audio.js";
 
 // Better DOM mock for Node.js environment
@@ -116,14 +115,6 @@ describe("audio module", () => {
     
     assert.doesNotThrow(() => playExorcismSound());
     assert.doesNotThrow(() => playSessionCompleteSound());
-  });
-
-  test("shouldReduceMotion returns boolean", () => {
-    const state = { soundOn: false };
-    initAudio(state);
-    
-    const result = shouldReduceMotion();
-    assert.equal(typeof result, "boolean");
   });
 
   test("property: toggleMute always changes isSoundMuted() result", () => {

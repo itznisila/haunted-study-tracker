@@ -1,4 +1,4 @@
-/**
+﻿/**
  * UI module for Haunted Study Tracker
  * Handles rendering and DOM manipulation
  */
@@ -92,7 +92,27 @@ export function createGhost(task, now) {
 export function createWarningWisp() {
   const span = document.createElement("span");
   span.className = "task-warning";
-  span.textContent = "⚠️ Due soon";
+  span.innerHTML = '<span class="mist-wisp"></span> Due soon';
+  return span;
+}
+
+/**
+ * Create an overdue label for tasks
+ * @param {string} deadline - ISO string deadline
+ * @param {Date} now - Current date/time
+ * @returns {HTMLElement}
+ */
+export function createOverdueLabel(deadline, now) {
+  const span = document.createElement("span");
+  span.className = "task-overdue";
+  
+  const hoursOverdue = (now - new Date(deadline)) / (1000 * 60 * 60);
+  const daysOverdue = hoursOverdue / 24;
+  
+  const hoursText = Math.round(hoursOverdue);
+  const daysText = Math.round(daysOverdue);
+  
+  span.textContent = `👻 Haunting you · ${hoursText}h/${daysText}d overdue`;
   return span;
 }
 
@@ -200,16 +220,24 @@ export function createTaskItem(task, now, onToggle, onEdit, onDelete) {
   info.appendChild(title);
   info.appendChild(meta);
 
-  // Add warning if needed
-  if (!task.done && isWarning(task.deadline, now)) {
-    info.appendChild(createWarningWisp());
+  // Add overdue or warning label if needed
+  if (!task.done) {
+    const level = angerLevel(task.deadline, now);
+    if (level > 0) {
+      // Task is overdue
+      info.appendChild(createOverdueLabel(task.deadline, now));
+    } else if (isWarning(task.deadline, now)) {
+      // Task due soon but not overdue
+      info.appendChild(createWarningWisp());
+    }
   }
 
   const actions = document.createElement("div");
   actions.className = "task-actions";
 
   const toggleBtn = document.createElement("button");
-  toggleBtn.textContent = task.done ? "Undo" : "Done";
+  const level = angerLevel(task.deadline, now);
+  toggleBtn.textContent = task.done ? "Undo" : (level > 0 ? "Exorcise" : "Done");
   toggleBtn.onclick = () => onToggle(task.id);
 
   const deleteBtn = document.createElement("button");

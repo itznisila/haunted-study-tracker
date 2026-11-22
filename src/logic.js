@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Pure business logic for Haunted Study Tracker
  * All functions are deterministic and have no side effects
  */
@@ -71,8 +71,8 @@ export function ghostStyle(level) {
   
   const styles = {
     0: { size: 60, opacity: 0, speed: 0 },
-    1: { size: 70, opacity: 0.6, speed: 1 },
-    2: { size: 100, opacity: 0.8, speed: 2 },
+    1: { size: 90, opacity: 0.85, speed: 1 },
+    2: { size: 115, opacity: 0.92, speed: 2 },
     3: { size: 150, opacity: 1, speed: 3 },
   };
 

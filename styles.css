@@ -15,8 +15,8 @@
   --font-body: "Inter", sans-serif;
 
   /* Sizing */
-  --size-ghost-small: 60px;
-  --size-ghost-med: 100px;
+  --size-ghost-small: 90px;
+  --size-ghost-med: 115px;
   --size-ghost-large: 150px;
 }
 
@@ -34,6 +34,27 @@ html, body {
   background-color: var(--color-black);
   color: var(--color-ghost-white);
   overflow: hidden;
+}
+
+/* Header */
+.header {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header-title {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  color: var(--color-ghost-white);
+  margin-bottom: 5px;
+}
+
+.header-tagline {
+  color: rgba(232, 230, 240, 0.7);
+  font-size: 0.95rem;
+  font-style: italic;
+  margin: 0;
 }
 
 /* Room background with dynamic lighting */
@@ -658,6 +679,147 @@ html, body {
   .timer-section {
     max-height: calc(50vh - 20px);
   }
+}
+
+/* Mist wisp animation for "Due soon" warning */
+.mist-wisp {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  vertical-align: middle;
+  animation: mist-drift 2s ease-in-out infinite;
+}
+
+@keyframes mist-drift {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateX(2px) translateY(-2px);
+  }
+}
+
+/* Overdue task label */
+.task-overdue {
+  display: block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: rgba(192, 57, 43, 0.2);
+  border-left: 3px solid var(--color-anger-red);
+  color: #ff9999;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Empty state for task list */
+.task-list.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: rgba(232, 230, 240, 0.4);
+}
+
+.empty-ghost {
+  width: 80px;
+  height: 80px;
+  opacity: 0.3;
+  object-fit: contain;
+}
+
+.empty-message {
+  font-size: 1.1rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Demo button */
+.demo-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  background: rgba(255, 179, 71, 0.2);
+  border: 1px solid var(--color-candle-amber);
+  border-radius: 4px;
+  color: var(--color-candle-amber);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 100;
+}
+
+.demo-button:hover {
+  background: rgba(255, 179, 71, 0.3);
+  box-shadow: 0 0 10px rgba(255, 179, 71, 0.4);
+}
+
+/* Delete confirmation dialog (inline) */
+.delete-confirm {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.delete-confirm-content {
+  background: rgba(42, 31, 61, 0.95);
+  border: 2px solid var(--color-anger-red);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 250px;
+  text-align: center;
+}
+
+.delete-confirm-title {
+  color: var(--color-ghost-white);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.delete-confirm-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(232, 230, 240, 0.3);
+  border-radius: 4px;
+  color: var(--color-ghost-white);
+  background: rgba(232, 230, 240, 0.1);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.delete-confirm-btn:hover {
+  background: rgba(232, 230, 240, 0.2);
+  border-color: rgba(232, 230, 240, 0.5);
+}
+
+.delete-confirm-btn:focus {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 2px;
+}
+
+.delete-confirm-btn.confirm {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: #ff6b6b;
+  color: #ff9999;
+}
+
+.delete-confirm-btn.confirm:hover {
+  background: rgba(255, 107, 107, 0.3);
+  border-color: #ff6b6b;
 }
 
 /* Accessibility: Reduced motion */

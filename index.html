@@ -1,13 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Haunted Study Tracker</title>
+  <title>👻 Haunted Study Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="assets/ghost.png">
 </head>
 <body>
   <div class="room">
@@ -15,6 +16,11 @@
     <div class="haunting-layer" id="hauntingLayer"></div>
 
     <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-title">👻 Haunted Study Tracker</h1>
+        <p class="header-tagline">Overdue work haunts you. Focus drives the ghosts away.</p>
+      </header>
       <!-- Task list -->
       <section class="task-section">
         <h1>Tasks</h1>
@@ -64,7 +70,7 @@
         </div>
 
         <div class="controls">
-          <button id="soundToggle" aria-label="Toggle sound">🔊 Sound: Off</button>
+          <button id="soundToggle" aria-label="Toggle sound">ðŸ”Š Sound: Off</button>
         </div>
       </section>
     </div>

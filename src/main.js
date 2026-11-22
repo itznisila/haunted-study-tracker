@@ -7,7 +7,7 @@ import { load, save } from "./storage.js";
 import { sortPending, isWarning, candleFraction, localDateKey, currentStreak, roomBrightness } from "./logic.js";
 import { createTaskItem, formatDeadline, playExorcismAnimation, updateCandleWax, updateTimerDisplay } from "./ui.js";
 import { renderGhosts, driftGhost } from "./ghosts.js";
-import { initAudio, toggleMute, updateSoundButtonUI, playExorcismSound, playSessionCompleteSound, shouldReduceMotion } from "./audio.js";
+import { initAudio, toggleMute, updateSoundButtonUI, playExorcismSound, playSessionCompleteSound, } from "./audio.js";
 
 let state = null;
 let editingTaskId = null;
@@ -18,7 +18,9 @@ let popoverKeyHandler = null;
 // Timer state
 let timerIntervalId = null;
 let timerAnimationFrameId = null;
-const TIMER_DURATION = 25 * 60 * 1000; // 25 minutes in milliseconds
+// Check if demo mode is enabled
+const isDemoMode = new URLSearchParams(window.location.search).get("demo") === "1";
+const TIMER_DURATION = isDemoMode ? 60 * 1000 : 25 * 60 * 1000; // 60 seconds in demo, 25 minutes normal
 const timerState = {
   isRunning: false,
   timeRemaining: TIMER_DURATION,
@@ -273,16 +275,76 @@ function handleGhostClick(taskId, ghostEl) {
 }
 
 /**
- * Handle task deletion
+ * Show delete confirmation dialog
  */
-function handleDeleteTask(taskId) {
-  if (confirm("Delete this task?")) {
+function showDeleteConfirmation(taskId) {
+  // Create confirmation dialog
+  const dialog = document.createElement("div");
+  dialog.className = "delete-confirm";
+  
+  const dialogContent = document.createElement("div");
+  dialogContent.className = "delete-confirm-content";
+  
+  const title = document.createElement("div");
+  title.className = "delete-confirm-title";
+  title.textContent = "Banish this task forever?";
+  
+  const actions = document.createElement("div");
+  actions.className = "delete-confirm-actions";
+  
+  const yesBtn = document.createElement("button");
+  yesBtn.className = "delete-confirm-btn confirm";
+  yesBtn.textContent = "Yes, banish it";
+  
+  const noBtn = document.createElement("button");
+  noBtn.className = "delete-confirm-btn";
+  noBtn.textContent = "No, keep it";
+  
+  actions.appendChild(yesBtn);
+  actions.appendChild(noBtn);
+  dialogContent.appendChild(title);
+  dialogContent.appendChild(actions);
+  dialog.appendChild(dialogContent);
+  
+  // Position in center
+  dialog.style.left = "50%";
+  dialog.style.top = "50%";
+  
+  document.body.appendChild(dialog);
+  
+  yesBtn.addEventListener("click", () => {
+    dialog.remove();
     state.tasks = state.tasks.filter((t) => t.id !== taskId);
     save(state);
     renderTaskList();
     clearForm();
-  }
+  });
+  
+  noBtn.addEventListener("click", () => {
+    dialog.remove();
+  });
+  
+  // Close on Escape
+  const escapeHandler = (e) => {
+    if (e.key === "Escape") {
+      dialog.remove();
+      document.removeEventListener("keydown", escapeHandler);
+    }
+  };
+  document.addEventListener("keydown", escapeHandler);
+  
+  // Focus Yes button
+  yesBtn.focus();
 }
+
+/**
+ * Handle task deletion
+ */
+function handleDeleteTask(taskId) {
+  showDeleteConfirmation(taskId);
+}
+
+
 
 /**
  * Handle task editing
@@ -556,6 +618,50 @@ function updateStreakDisplay() {
 }
 
 /**
+ * Load 3 demo tasks with different overdue periods
+ */
+function loadDemoGhosts() {
+  if (!state.tasks) state.tasks = [];
+  
+  const now = new Date();
+  
+  // Add demo tasks
+  const demoTasks = [
+    {
+      id: generateTaskId(),
+      title: "Complete project report",
+      subject: "Work",
+      deadline: new Date(now - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+      done: false,
+      completedAt: null,
+      exorcisedAt: null,
+    },
+    {
+      id: generateTaskId(),
+      title: "Review design mockups",
+      subject: "Design",
+      deadline: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+      done: false,
+      completedAt: null,
+      exorcisedAt: null,
+    },
+    {
+      id: generateTaskId(),
+      title: "Submit final deliverables",
+      subject: "Client",
+      deadline: new Date(now - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+      done: false,
+      completedAt: null,
+      exorcisedAt: null,
+    },
+  ];
+  
+  state.tasks.push(...demoTasks);
+  save(state);
+  renderTaskList();
+}
+
+/**
  * Initialize the application
  */
 function initApp() {
@@ -596,6 +702,14 @@ function initApp() {
   renderTaskList();
   updateExorcisedCount();
   updateStreakDisplay();
+  // Demo mode button
+  if (isDemoMode) {
+    const demoBtn = document.createElement("button");
+    demoBtn.className = "demo-button";
+    demoBtn.textContent = "Load demo ghosts";
+    demoBtn.addEventListener("click", loadDemoGhosts);
+    document.body.appendChild(demoBtn);
+  }
 
   const hauntingLayer = document.getElementById("hauntingLayer");
   // 60-second interval calls renderGhostsLayer to handle newly overdue tasks
