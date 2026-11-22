@@ -12,11 +12,10 @@ const animationFrameIds = new Map();
 const ghostPositions = new Map();
 
 /**
- * How far (px) a ghost wanders left/right from its spot. Higher anger = wider.
- * Also used by main.js to keep enough empty space around a new ghost.
+ * How far (px) a ghost sways left/right around its fixed slot. Higher anger = wider.
  */
 export function ghostWanderRange(speed) {
-  return 40 + (speed - 1) * 30; // 40, 70, 100 px
+  return 8 + (speed - 1) * 6; // 8, 14, 20 px: ghosts hover in their slot, angrier = more restless
 }
 
 /**
@@ -210,7 +209,7 @@ export function driftGhost(element, speed, initialX, initialY) {
     const wanderX = Math.sin(elapsed * frequency) * amplitude;
     
     // Gentle bob in Y (slower oscillation)
-    const bob = Math.sin(elapsed * frequency * 0.5) * 20;
+    const bob = Math.sin(elapsed * frequency * 0.5) * 8;
 
     const newX = Math.max(0, Math.min(initialX + wanderX, container.clientWidth - 100));
     const newY = Math.max(0, Math.min(initialY + bob, container.clientHeight - 100));

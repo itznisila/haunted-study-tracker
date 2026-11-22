@@ -6,7 +6,7 @@
 import { load, save } from "./storage.js";
 import { sortPending, isWarning, candleFraction, localDateKey, currentStreak } from "./logic.js";
 import { createTaskItem, formatDeadline, playExorcismAnimation, updateCandleWax, updateTimerDisplay } from "./ui.js";
-import { renderGhosts, driftGhost, getGhostPosition, setGhostPosition, ghostWanderRange } from "./ghosts.js";
+import { renderGhosts, driftGhost } from "./ghosts.js";
 
 let state = null;
 let editingTaskId = null;
@@ -74,42 +74,45 @@ function renderTaskList() {
   renderGhostsLayer();
 }
 
-// Visible UI that ghosts must not spawn behind
-const GHOST_BLOCKERS =
-  ".task-section h1, .task-form, .error-message, .task-item, " +
-  ".timer-section h2, .candle-container, .timer-display, .timer-controls, .stats, .controls";
+// Ghosts sit in a fixed grid of slots to the right of the candle
+const GHOST_CELL = 150; // px per slot (largest ghost is 150px)
+const GHOST_GAP_FROM_CANDLE = 40; // px between candle and first column
 
 /**
- * Find a random spot where a ghost (plus its wander range) doesn't overlap the UI.
- * Falls back to a random spot if the screen is too full.
+ * Smallest slot number not used by a ghost currently on screen.
  */
-function findFreeSpot(size, wander) {
-  const rects = [...document.querySelectorAll(GHOST_BLOCKERS)].map((el) =>
-    el.getBoundingClientRect()
+function freeGhostSlot(hauntingLayer) {
+  const used = new Set(
+    [...hauntingLayer.querySelectorAll(".ghost-button[data-slot]")].map((el) =>
+      Number(el.dataset.slot)
+    )
   );
-  const maxX = Math.max(0, window.innerWidth - size);
-  const maxY = Math.max(0, window.innerHeight - size);
-  const bob = 25; // vertical bob in driftGhost is about 20px
-
-  for (let i = 0; i < 80; i++) {
-    const x = Math.random() * maxX;
-    const y = Math.random() * maxY;
-    const overlaps = rects.some(
-      (r) =>
-        x - wander < r.right &&
-        x + size + wander > r.left &&
-        y - bob < r.bottom &&
-        y + size + bob > r.top
-    );
-    if (!overlaps) return { x, y };
-  }
-  // ponytail: screen too crowded, accept a random spot; smarter packing if this happens often
-  return { x: Math.random() * maxX, y: Math.random() * maxY };
+  let slot = 0;
+  while (used.has(slot)) slot++;
+  return slot;
 }
 
 /**
- * Render ghosts and set up only NEW ones (position, drift, click).
- * New ghosts spawn in empty screen areas, never behind the task list or timer.
+ * Top-left position of a slot, laid out in columns to the right of the candle,
+ * then wrapping to the next row below. The ghost is centred inside its cell.
+ */
+function ghostSlotPosition(slot, size) {
+  const candle = document.getElementById("candle").getBoundingClientRect();
+  const startX = candle.right + GHOST_GAP_FROM_CANDLE;
+  const startY = candle.top - 40; // line up with the flame
+  const available = window.innerWidth - startX - 20;
+  const columns = Math.max(1, Math.floor(available / GHOST_CELL));
+  const col = slot % columns;
+  const row = Math.floor(slot / columns);
+  return {
+    x: startX + col * GHOST_CELL + (GHOST_CELL - size) / 2,
+    y: startY + row * GHOST_CELL + (GHOST_CELL - size) / 2,
+  };
+}
+
+/**
+ * Render ghosts and set up only NEW ones (slot position, sway, click).
+ * Each ghost gets a fixed slot to the right of the candle.
  */
 function renderGhostsLayer() {
   const hauntingLayer = document.getElementById("hauntingLayer");
@@ -124,11 +127,10 @@ function renderGhostsLayer() {
     const level = parseInt(ghostEl.getAttribute("data-anger-level"));
     const speed = Math.min(Math.max(level || 1, 1), 3);
 
-    let pos = getGhostPosition(taskId);
-    if (!pos) {
-      pos = findFreeSpot(ghostEl.offsetWidth || 150, ghostWanderRange(speed));
-      setGhostPosition(taskId, pos.x, pos.y);
-    }
+    const slot = freeGhostSlot(hauntingLayer);
+    ghostEl.dataset.slot = slot;
+    // ponytail: slots are computed once; resizing the window won't move existing ghosts until reload
+    const pos = ghostSlotPosition(slot, ghostEl.offsetWidth || GHOST_CELL);
 
     ghostEl.style.left = `${pos.x}px`;
     ghostEl.style.top = `${pos.y}px`;
