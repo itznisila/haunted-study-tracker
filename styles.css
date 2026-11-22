@@ -1,4 +1,4 @@
-/* Theme CSS Variables */
+﻿/* Theme CSS Variables */
 :root {
   /* Colors */
   --color-black: #0b0a12;
@@ -451,12 +451,22 @@ html, body {
   font-size: 1rem;
   padding: 0;
   font-family: inherit;
+  transition: opacity 0.3s ease;
+}
+
+.ghost-button:hover {
+  opacity: 0.9;
 }
 
 .ghost-button:focus {
   outline: 2px solid var(--color-candle-amber);
   outline-offset: 4px;
   border-radius: 50%;
+}
+
+/* Ghost SVG styling */
+.ghost-svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Exorcism animation */
@@ -476,7 +486,7 @@ html, body {
   }
 }
 
-.ghost.exorcising {
+.ghost-button.exorcising {
   animation: exorcise 0.6s ease-out forwards;
 }
 
@@ -498,6 +508,70 @@ html, body {
   animation: particle-dissolve 0.6s ease-out forwards;
 }
 
+
+/* Exorcism confirmation popover */
+.exorcism-popover {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.popover-content {
+  background: rgba(42, 31, 61, 0.95);
+  border: 2px solid var(--color-candle-amber);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 200px;
+}
+
+.popover-title {
+  color: var(--color-ghost-white);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  word-wrap: break-word;
+}
+
+.popover-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.popover-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(232, 230, 240, 0.3);
+  border-radius: 4px;
+  color: var(--color-ghost-white);
+  background: rgba(232, 230, 240, 0.1);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.popover-btn:hover {
+  background: rgba(232, 230, 240, 0.2);
+  border-color: rgba(232, 230, 240, 0.5);
+}
+
+.popover-btn:focus {
+  outline: 2px solid var(--color-candle-amber);
+  outline-offset: 2px;
+}
+
+.exorcise-btn {
+  background: rgba(255, 179, 71, 0.2);
+  border-color: var(--color-candle-amber);
+  color: var(--color-candle-amber);
+}
+
+.exorcise-btn:hover {
+  background: rgba(255, 179, 71, 0.3);
+  border-color: var(--color-candle-amber);
+}
 /* Responsive layout */
 @media (max-width: 1024px) {
   .container {

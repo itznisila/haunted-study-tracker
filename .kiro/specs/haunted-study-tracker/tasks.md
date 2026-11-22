@@ -18,7 +18,7 @@
   - Add/edit/delete form with validation, sorted pending list, warning wisp for tasks due within 24h.
   - _Requirements: 1.1, 1.2, 1.3, 1.5, 2.5_
 
-- [ ] 5. Ghost haunting layer
+- [x] 5. Ghost haunting layer
   - Render one ghost per overdue task, styled by anger level, drifting with `requestAnimationFrame`.
   - Tooltip on hover/focus; click to offer completion.
   - Re-check anger levels every minute.

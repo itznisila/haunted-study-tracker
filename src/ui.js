@@ -156,6 +156,7 @@ export function playExorcismAnimation(ghostEl, onComplete) {
   }
 
   setTimeout(() => {
+    ghostEl.remove();
     if (onComplete) onComplete();
   }, 600);
 }

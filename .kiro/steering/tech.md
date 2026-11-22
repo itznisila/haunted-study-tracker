@@ -24,5 +24,7 @@ inclusion: always
 - Sounds are off by default and have a mute toggle.
 
 ## Environment
-- OS is Windows, shell is PowerShell. Use Kiro's file write/edit tools to change files,
-  never shell heredocs. Chain commands with ';' not '&&'.
+- OS is Windows, shell is PowerShell. Use Kiro's file tools to edit files.
+  Chain commands with ';' not '&&'. No tail/head/grep — use Select-Object/Select-String.
+- Never delete a failing test to make the suite pass. Fix the code, or if a test
+  needs the browser DOM, don't write it.
