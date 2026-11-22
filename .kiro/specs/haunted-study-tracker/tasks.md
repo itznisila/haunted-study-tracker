@@ -40,5 +40,5 @@
   - Web Audio effects with a mute toggle (off by default); reduced-motion support; keyboard check.
   - _Requirements: 4.3, 6.1, 6.2, 6.3_
 
-- [ ] 10. Polish and deploy
+- [X] 10. Polish and deploy
   - Empty states ("No ghosts... for now"), demo data button for the video, README, deploy to GitHub Pages.

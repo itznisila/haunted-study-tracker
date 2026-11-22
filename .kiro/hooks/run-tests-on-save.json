@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run tests on save",
+      "trigger": "PostFileSave",
+      "action": {
+        "type": "command",
+        "command": "npm test > test-results.txt 2>&1"
+      },
+      "description": "Runs the unit and property-based tests whenever a source or test file is saved",
+      "enabled": true
+    }
+  ]
+}

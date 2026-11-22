@@ -82,7 +82,7 @@ The whole app was built from a Kiro spec in `.kiro/specs/haunted-study-tracker/`
 
 ### Agent hook
 
-A manual **Run tests** hook runs `npm test` and summarises failures on demand. It is manual rather than triggered on save, to keep credit use low.
+A **Run tests on save** hook runs `npm test` automatically whenever Kiro's agent saves a file in `src/` or `test/`, so every AI-made change is checked against the full unit and property-based test suite. It runs a shell command rather than a prompt, so it costs no credits.
 
 ### Property-based testing (fast-check)
 
@@ -117,7 +117,7 @@ test/               Unit and property-based tests (node --test + fast-check)
 
 ## Credits
 
-- Ghost image (`assets/ghost.png`): _add source and licence_
+- Ghost image (`assets/ghost.png`): "Ghost" 3D emoji from [Microsoft Fluent Emoji](https://github.com/microsoft/fluentui-emoji), MIT License, © Microsoft Corporation
 - Fonts: Creepster and Inter from Google Fonts (SIL Open Font License)
 - All sounds are generated in code with the Web Audio API
 
