@@ -32,7 +32,7 @@
   - 25-minute timer with start/pause/reset, melting candle, dims ghosts while running, logs minutes when done.
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 8. Streak and room light
+- [x] 8. Streak and room light
   - Show streak count; drive `--room-light` from `roomBrightness`.
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 

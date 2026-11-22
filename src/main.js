@@ -4,7 +4,7 @@
  */
 
 import { load, save } from "./storage.js";
-import { sortPending, isWarning, candleFraction, localDateKey, currentStreak } from "./logic.js";
+import { sortPending, isWarning, candleFraction, localDateKey, currentStreak, roomBrightness } from "./logic.js";
 import { createTaskItem, formatDeadline, playExorcismAnimation, updateCandleWax, updateTimerDisplay } from "./ui.js";
 import { renderGhosts, driftGhost } from "./ghosts.js";
 
@@ -541,11 +541,11 @@ function updateTimerButtons() {
  * Update streak display
  */
 function updateStreakDisplay() {
+  const streak = currentStreak(state.sessions || {}, new Date());
   const streakCountEl = document.getElementById("streakCount");
-  if (streakCountEl && state.sessions) {
-    const streak = currentStreak(state.sessions, new Date());
-    streakCountEl.textContent = streak;
-  }
+  if (streakCountEl) streakCountEl.textContent = streak;
+  // Light the room: 0 = dark, 7+ days = full candle glow (see .room::before in styles.css)
+  document.documentElement.style.setProperty("--room-light", roomBrightness(streak));
 }
 
 /**

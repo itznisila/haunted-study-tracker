@@ -121,44 +121,40 @@ export function updateTimerDisplay(display, remainingMs) {
 }
 
 /**
- * Play exorcism animation on a ghost
- * @param {HTMLElement} ghostEl - Ghost button element
- * @param {Function} onComplete - Callback when animation completes
+ * Exorcism effect: burst of light particles, then the ghost flashes, spins and fades.
+ * Removes the ghost and calls onComplete exactly once when finished.
  */
 export function playExorcismAnimation(ghostEl, onComplete) {
-  ghostEl.classList.add("exorcising");
-
-  // Create particles
-  const rect = ghostEl.getBoundingClientRect();
-  const container = ghostEl.parentElement;
-
-  for (let i = 0; i < 8; i++) {
-    const particle = document.createElement("div");
-    particle.className = "particle";
-    particle.style.left = rect.left + rect.width / 2 + "px";
-    particle.style.top = rect.top + rect.height / 2 + "px";
-    particle.style.width = "10px";
-    particle.style.height = "10px";
-    particle.style.background = "rgba(255, 179, 71, 0.8)";
-    particle.style.borderRadius = "50%";
-
-    const angle = (i / 8) * Math.PI * 2;
-    const distance = 100;
-    const tx = Math.cos(angle) * distance;
-    const ty = Math.sin(angle) * distance;
-
-    particle.style.setProperty("--tx", `${tx}px`);
-    particle.style.setProperty("--ty", `${ty}px`);
-
-    container.appendChild(particle);
-
-    setTimeout(() => particle.remove(), 600);
-  }
-
-  setTimeout(() => {
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
     ghostEl.remove();
     if (onComplete) onComplete();
-  }, 600);
+  };
+
+  const layer = ghostEl.parentElement;
+  if (!layer) return finish();
+
+  // Burst of light particles from the ghost's centre
+  const cx = ghostEl.offsetLeft + ghostEl.offsetWidth / 2;
+  const cy = ghostEl.offsetTop + ghostEl.offsetHeight / 2;
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const distance = 60 + Math.random() * 60;
+    const p = document.createElement("span");
+    p.className = "particle";
+    p.style.left = `${cx - 6}px`;
+    p.style.top = `${cy - 6}px`;
+    p.style.setProperty("--tx", `${Math.cos(angle) * distance}px`);
+    p.style.setProperty("--ty", `${Math.sin(angle) * distance}px`);
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+
+  ghostEl.classList.add("exorcising");
+  ghostEl.addEventListener("animationend", finish, { once: true });
+  setTimeout(finish, 1000); // fallback if animationend never fires (e.g. animations turned off)
 }
 
 /**
