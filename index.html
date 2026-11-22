@@ -41,8 +41,8 @@
         <h2>Focus Timer</h2>
         <div class="candle-container">
           <div class="candle" id="candle">
-            <div class="flame"></div>
-            <div class="wax"></div>
+            <!-- Flame lives inside the wax so it sinks as the wax melts -->
+            <div class="wax"><div class="flame"></div></div>
           </div>
         </div>
         <div id="timerDisplay" class="timer-display">25:00</div>

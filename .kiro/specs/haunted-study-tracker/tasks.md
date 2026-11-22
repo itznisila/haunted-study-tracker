@@ -28,7 +28,7 @@
   - Completing a task plays the exorcism animation, removes the ghost and increments the counter.
   - _Requirements: 3.1, 3.3_
 
-- [ ] 7. Candle timer
+- [x] 7. Candle timer
   - 25-minute timer with start/pause/reset, melting candle, dims ghosts while running, logs minutes when done.
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 

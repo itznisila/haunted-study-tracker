@@ -4,8 +4,8 @@
  */
 
 import { load, save } from "./storage.js";
-import { sortPending, isWarning } from "./logic.js";
-import { createTaskItem, formatDeadline, playExorcismAnimation } from "./ui.js";
+import { sortPending, isWarning, candleFraction, localDateKey, currentStreak } from "./logic.js";
+import { createTaskItem, formatDeadline, playExorcismAnimation, updateCandleWax, updateTimerDisplay } from "./ui.js";
 import { renderGhosts, driftGhost, getGhostPosition, setGhostPosition } from "./ghosts.js";
 
 let state = null;
@@ -13,6 +13,16 @@ let editingTaskId = null;
 let angerUpdateInterval = null;
 let currentPopover = null;
 let popoverKeyHandler = null;
+
+// Timer state
+let timerIntervalId = null;
+let timerAnimationFrameId = null;
+const TIMER_DURATION = 25 * 60 * 1000; // 25 minutes in milliseconds
+const timerState = {
+  isRunning: false,
+  timeRemaining: TIMER_DURATION,
+  startTime: null,
+};
 
 /**
  * Generate a unique task ID
@@ -360,6 +370,167 @@ function updateExorcisedCount() {
 }
 
 /**
+ * Update ghosts opacity based on timer state
+ */
+function updateGhostDimming() {
+  const hauntingLayer = document.getElementById("hauntingLayer");
+  if (timerState.isRunning) {
+    hauntingLayer.classList.add("has-active-timer");
+  } else {
+    hauntingLayer.classList.remove("has-active-timer");
+  }
+}
+
+/**
+ * Handle timer tick - called by requestAnimationFrame
+ */
+function handleTimerTick() {
+  if (!timerState.isRunning) {
+    return;
+  }
+
+  const now = Date.now();
+  const elapsed = now - timerState.startTime;
+  timerState.timeRemaining = Math.max(0, TIMER_DURATION - elapsed);
+
+  // Update display and candle
+  const display = document.getElementById("timerDisplay");
+  updateTimerDisplay(display, timerState.timeRemaining);
+
+  const candle = document.getElementById("candle");
+  const fraction = candleFraction(timerState.timeRemaining, TIMER_DURATION);
+  updateCandleWax(candle, fraction);
+
+  if (timerState.timeRemaining <= 0) {
+    // Timer complete
+    handleTimerComplete();
+  } else {
+    timerAnimationFrameId = requestAnimationFrame(handleTimerTick);
+  }
+}
+
+/**
+ * Start the timer
+ */
+function handleStartTimer() {
+  if (timerState.isRunning) return;
+
+  timerState.isRunning = true;
+  timerState.startTime = Date.now() - (TIMER_DURATION - timerState.timeRemaining);
+  
+  updateGhostDimming();
+  updateTimerButtons();
+  handleTimerTick();
+}
+
+/**
+ * Pause the timer
+ */
+function handlePauseTimer() {
+  if (!timerState.isRunning) return;
+
+  timerState.isRunning = false;
+  cancelAnimationFrame(timerAnimationFrameId);
+  
+  updateGhostDimming();
+  updateTimerButtons();
+}
+
+/**
+ * Reset the timer
+ */
+function handleResetTimer() {
+  timerState.isRunning = false;
+  timerState.timeRemaining = TIMER_DURATION;
+  cancelAnimationFrame(timerAnimationFrameId);
+
+  const display = document.getElementById("timerDisplay");
+  updateTimerDisplay(display, TIMER_DURATION);
+
+  const candle = document.getElementById("candle");
+  const flame = candle.querySelector(".flame");
+  flame.classList.remove("paused");
+  updateCandleWax(candle, 1);
+
+  updateGhostDimming();
+  updateTimerButtons();
+}
+
+/**
+ * Complete the timer - add 25 minutes to today's sessions
+ */
+function handleTimerComplete() {
+  timerState.isRunning = false;
+  timerState.timeRemaining = TIMER_DURATION;
+  cancelAnimationFrame(timerAnimationFrameId);
+
+  // Log 25 minutes to today's session
+  const today = new Date();
+  const todayKey = localDateKey(today);
+  
+  if (!state.sessions) {
+    state.sessions = {};
+  }
+  
+  state.sessions[todayKey] = (state.sessions[todayKey] || 0) + 25;
+  
+  // Save state
+  save(state);
+  
+  // Update streak display
+  updateStreakDisplay();
+
+  // Reset UI
+  const display = document.getElementById("timerDisplay");
+  updateTimerDisplay(display, TIMER_DURATION);
+
+  const candle = document.getElementById("candle");
+  updateCandleWax(candle, 1);
+
+  updateGhostDimming();
+  updateTimerButtons();
+
+  // Flash candle briefly
+  const flame = candle.querySelector(".flame");
+  flame.classList.add("complete-flash");
+  setTimeout(() => flame.classList.remove("complete-flash"), 600);
+}
+
+/**
+ * Update timer button states
+ */
+function handleUpdateTimerButtons() {
+  const startBtn = document.getElementById("startTimer");
+  const pauseBtn = document.getElementById("pauseTimer");
+
+  if (timerState.isRunning) {
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+  } else {
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+  }
+}
+
+/**
+ * Alias for button update
+ */
+function updateTimerButtons() {
+  handleUpdateTimerButtons();
+}
+
+/**
+ * Update streak display
+ */
+function updateStreakDisplay() {
+  const streakCountEl = document.getElementById("streakCount");
+  if (streakCountEl && state.sessions) {
+    const streak = currentStreak(state.sessions, new Date());
+    streakCountEl.textContent = streak;
+  }
+}
+
+/**
  * Initialize the application
  */
 function initApp() {
@@ -368,8 +539,23 @@ function initApp() {
   const taskForm = document.getElementById("taskForm");
   taskForm.addEventListener("submit", handleFormSubmit);
 
+  // Timer event listeners
+  document.getElementById("startTimer").addEventListener("click", handleStartTimer);
+  document.getElementById("pauseTimer").addEventListener("click", handlePauseTimer);
+  document.getElementById("resetTimer").addEventListener("click", handleResetTimer);
+
+  // Initialize timer display
+  const display = document.getElementById("timerDisplay");
+  updateTimerDisplay(display, timerState.timeRemaining);
+  updateTimerButtons();
+
+  // Initialize candle
+  const candle = document.getElementById("candle");
+  updateCandleWax(candle, 1);
+
   renderTaskList();
   updateExorcisedCount();
+  updateStreakDisplay();
 
   const hauntingLayer = document.getElementById("hauntingLayer");
   // 60-second interval calls renderGhostsLayer to handle newly overdue tasks
