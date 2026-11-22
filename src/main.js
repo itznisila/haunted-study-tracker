@@ -66,6 +66,18 @@ function renderTaskList() {
   const pendingTasks = sortPending(state.tasks);
   const now = new Date();
 
+  taskList.classList.toggle("empty-state", pendingTasks.length === 0);
+  if (pendingTasks.length === 0) {
+    const ghost = document.createElement("img");
+    ghost.src = "assets/ghost.png";
+    ghost.alt = "";
+    ghost.className = "empty-ghost";
+    const msg = document.createElement("p");
+    msg.className = "empty-message";
+    msg.textContent = "No ghosts... for now.";
+    taskList.append(ghost, msg);
+  }
+
   pendingTasks.forEach((task) => {
     const taskItem = createTaskItem(
       task,
@@ -99,21 +111,28 @@ function freeGhostSlot(hauntingLayer) {
 }
 
 /**
- * Top-left position of a slot, laid out in columns to the right of the candle,
- * then wrapping to the next row below. The ghost is centred inside its cell.
+ * Top-left position of a slot. Slots fill the empty space to the RIGHT of the candle first,
+ * then the space to its LEFT (so ghosts never land on the timer or buttons), then the next row.
+ * The ghost is centred inside its cell.
  */
 function ghostSlotPosition(slot, size) {
   const candle = document.getElementById("candle").getBoundingClientRect();
-  const startX = candle.right + GHOST_GAP_FROM_CANDLE;
-  const startY = candle.top - 40; // line up with the flame
-  const available = window.innerWidth - startX - 20;
-  const columns = Math.max(1, Math.floor(available / GHOST_CELL));
-  const col = slot % columns;
-  const row = Math.floor(slot / columns);
-  return {
-    x: startX + col * GHOST_CELL + (GHOST_CELL - size) / 2,
-    y: startY + row * GHOST_CELL + (GHOST_CELL - size) / 2,
-  };
+  const column = document.querySelector(".timer-section").getBoundingClientRect();
+  const top = candle.top - 40; // line up with the flame
+
+  const rightStart = candle.right + GHOST_GAP_FROM_CANDLE;
+  const rightCols = Math.max(1, Math.floor((window.innerWidth - 20 - rightStart) / GHOST_CELL));
+  const leftEnd = candle.left - GHOST_GAP_FROM_CANDLE;
+  const leftCols = Math.max(0, Math.floor((leftEnd - column.left) / GHOST_CELL));
+
+  // Cells of one row, in fill order: all right-side cells, then left-side cells (nearest first)
+  const row = [];
+  for (let i = 0; i < rightCols; i++) row.push(rightStart + i * GHOST_CELL);
+  for (let i = 0; i < leftCols; i++) row.push(leftEnd - (i + 1) * GHOST_CELL);
+
+  const x = row[slot % row.length];
+  const y = top + Math.floor(slot / row.length) * GHOST_CELL;
+  return { x: x + (GHOST_CELL - size) / 2, y: y + (GHOST_CELL - size) / 2 };
 }
 
 /**
@@ -355,9 +374,19 @@ function handleEditTask(taskId) {
     editingTaskId = taskId;
     document.getElementById("taskTitle").value = task.title;
     document.getElementById("taskSubject").value = task.subject;
-    document.getElementById("taskDeadline").value = task.deadline;
+    document.getElementById("taskDeadline").value = toDatetimeLocal(task.deadline);
     document.querySelector(".task-form button").textContent = "Update Task";
+    document.getElementById("taskTitle").focus();
   }
+}
+
+/**
+ * ISO deadline -> "YYYY-MM-DDTHH:mm" in local time, the format datetime-local inputs need
+ */
+function toDatetimeLocal(iso) {
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /**
@@ -610,7 +639,11 @@ function updateTimerButtons() {
  * Update streak display
  */
 function updateStreakDisplay() {
-  const streak = currentStreak(state.sessions || {}, new Date());
+  // Demo mode can preview a streak for the video: ?demo=1&streak=5 (display only, never saved)
+  const demoStreak = isDemoMode ? Number(new URLSearchParams(window.location.search).get("streak")) : NaN;
+  const streak = Number.isFinite(demoStreak) && demoStreak >= 0
+    ? demoStreak
+    : currentStreak(state.sessions || {}, new Date());
   const streakCountEl = document.getElementById("streakCount");
   if (streakCountEl) streakCountEl.textContent = streak;
   // Light the room: 0 = dark, 7+ days = full candle glow (see .room::before in styles.css)
@@ -629,8 +662,8 @@ function loadDemoGhosts() {
   const demoTasks = [
     {
       id: generateTaskId(),
-      title: "Complete project report",
-      subject: "Work",
+      title: "OOD coursework",
+      subject: "Object Oriented Development",
       deadline: new Date(now - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
       done: false,
       completedAt: null,
@@ -638,8 +671,8 @@ function loadDemoGhosts() {
     },
     {
       id: generateTaskId(),
-      title: "Review design mockups",
-      subject: "Design",
+      title: "Data Science lab report",
+      subject: "Data Science",
       deadline: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
       done: false,
       completedAt: null,
@@ -647,8 +680,8 @@ function loadDemoGhosts() {
     },
     {
       id: generateTaskId(),
-      title: "Submit final deliverables",
-      subject: "Client",
+      title: "Revise for Maths quiz",
+      subject: "Mathematics",
       deadline: new Date(now - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
       done: false,
       completedAt: null,

@@ -3,87 +3,7 @@
  * Handles rendering and DOM manipulation
  */
 
-import { angerLevel, isWarning, ghostStyle, candleFraction } from "./logic.js";
-
-/**
- * Create a ghost element for the haunting layer
- * @param {Object} task - Task object with id, title, deadline
- * @param {Date} now - Current date/time
- * @returns {HTMLElement} Ghost button element
- */
-export function createGhost(task, now) {
-  const level = angerLevel(task.deadline, now);
-  const style = ghostStyle(level);
-
-  if (style.opacity === 0) {
-    return null;
-  }
-
-  const daysOverdue = (now - new Date(task.deadline)) / (1000 * 60 * 60 * 24);
-  const daysText = daysOverdue < 1 ? "< 1 day" : `${Math.floor(daysOverdue)} days`;
-
-  const button = document.createElement("button");
-  button.className = "ghost-button";
-  button.setAttribute("aria-label", `Overdue ${daysText}: ${task.title}`);
-  button.setAttribute("data-task-id", task.id);
-  button.setAttribute("data-anger-level", level);
-
-  // Ghost SVG
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 100 120");
-  svg.setAttribute("width", style.size);
-  svg.setAttribute("height", style.size);
-  svg.style.opacity = style.opacity;
-
-  // Ghost color based on anger level
-  const colors = {
-    1: "rgba(232, 230, 240, 0.6)",
-    2: "rgba(240, 100, 100, 0.8)",
-    3: "rgba(192, 57, 43, 1)",
-  };
-
-  const ghostColor = colors[level] || colors[1];
-  const glowColor = level === 3 ? "#c0392b" : "rgba(255, 179, 71, 0.5)";
-
-  // Body
-  const body = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  body.setAttribute("cx", "50");
-  body.setAttribute("cy", "50");
-  body.setAttribute("r", "40");
-  body.setAttribute("fill", ghostColor);
-  body.setAttribute("filter", `drop-shadow(0 0 ${15 * (level / 3)} ${glowColor})`);
-
-  // Eyes
-  const leftEye = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  leftEye.setAttribute("cx", "35");
-  leftEye.setAttribute("cy", "45");
-  leftEye.setAttribute("r", "6");
-  leftEye.setAttribute("fill", "#0b0a12");
-
-  const rightEye = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  rightEye.setAttribute("cx", "65");
-  rightEye.setAttribute("cy", "45");
-  rightEye.setAttribute("r", "6");
-  rightEye.setAttribute("fill", "#0b0a12");
-
-  // Mouth
-  const mouth = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  mouth.setAttribute("d", "M 40 65 Q 50 75 60 65");
-  mouth.setAttribute("stroke", "#0b0a12");
-  mouth.setAttribute("stroke-width", "2");
-  mouth.setAttribute("fill", "none");
-  mouth.setAttribute("stroke-linecap", "round");
-
-  svg.appendChild(body);
-  svg.appendChild(leftEye);
-  svg.appendChild(rightEye);
-  svg.appendChild(mouth);
-
-  button.appendChild(svg);
-  button.style.position = "absolute";
-
-  return button;
-}
+import { angerLevel, isWarning } from "./logic.js";
 
 /**
  * Create a warning wisp next to a task
@@ -105,14 +25,14 @@ export function createWarningWisp() {
 export function createOverdueLabel(deadline, now) {
   const span = document.createElement("span");
   span.className = "task-overdue";
-  
-  const hoursOverdue = (now - new Date(deadline)) / (1000 * 60 * 60);
-  const daysOverdue = hoursOverdue / 24;
-  
-  const hoursText = Math.round(hoursOverdue);
-  const daysText = Math.round(daysOverdue);
-  
-  span.textContent = `👻 Haunting you · ${hoursText}h/${daysText}d overdue`;
+
+  const hoursOverdue = Math.max(0, (now - new Date(deadline)) / (1000 * 60 * 60));
+  const amount =
+    hoursOverdue < 1 ? "< 1h" :
+    hoursOverdue < 24 ? `${Math.floor(hoursOverdue)}h` :
+    `${Math.floor(hoursOverdue / 24)}d`;
+
+  span.textContent = `👻 Haunting you · ${amount} overdue`;
   return span;
 }
 
@@ -238,14 +158,22 @@ export function createTaskItem(task, now, onToggle, onEdit, onDelete) {
   const toggleBtn = document.createElement("button");
   const level = angerLevel(task.deadline, now);
   toggleBtn.textContent = task.done ? "Undo" : (level > 0 ? "Exorcise" : "Done");
+  toggleBtn.setAttribute("aria-label", `${toggleBtn.textContent}: ${task.title}`);
   toggleBtn.onclick = () => onToggle(task.id);
+
+  const editBtn = document.createElement("button");
+  editBtn.textContent = "Edit";
+  editBtn.setAttribute("aria-label", `Edit: ${task.title}`);
+  editBtn.onclick = () => onEdit(task.id);
 
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete";
   deleteBtn.textContent = "Delete";
+  deleteBtn.setAttribute("aria-label", `Delete: ${task.title}`);
   deleteBtn.onclick = () => onDelete(task.id);
 
   actions.appendChild(toggleBtn);
+  actions.appendChild(editBtn);
   actions.appendChild(deleteBtn);
 
   item.appendChild(info);
